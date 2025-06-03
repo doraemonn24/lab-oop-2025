@@ -2,14 +2,14 @@ package DownloadFile;
 
 public class Result {
     int fileId;
-    int duration;
     String threadName;
+    int duration;
     String status;
 
-    public Result(int fileId, int duration, String threadName, String status) {
+    Result(int fileId, String threadName, int duration, String status) {
         this.fileId = fileId;
-        this.duration = duration;
         this.threadName = threadName;
+        this.duration = duration;
         this.status = status;
     }
 }

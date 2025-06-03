@@ -1,13 +1,11 @@
 package TypeRacer;
 
-class Typer extends Thread {
+public class Typer extends Thread {
     private String botName, wordsTyped;
-    private double wpm;
+    private double wpm; 
     private TypeRacer typeRacer;
-
-    private long startTime;
-    private long endTime;
-    private boolean finished = false;
+    private volatile boolean finished = false; 
+    private int finishTime = 0; 
 
     public Typer(String botName, double wpm, TypeRacer typeRacer) {
         this.botName = botName;
@@ -24,12 +22,12 @@ class Typer extends Thread {
         this.wpm = wpm;
     }
 
-    public void addWordsTyped(String newWordsTyped) {
+    public synchronized void addWordsTyped(String newWordsTyped) {
         this.wordsTyped += newWordsTyped + " ";
     }
 
-    public String getWordsTyped() {
-        return wordsTyped.trim();
+    public synchronized String getWordsTyped() {
+        return wordsTyped;
     }
 
     public String getBotName() {
@@ -40,14 +38,6 @@ class Typer extends Thread {
         return wpm;
     }
 
-    public long getStartTime() {
-        return startTime;
-    }
-
-    public long getEndTime() {
-        return endTime;
-    }
-
     public boolean isFinished() {
         return finished;
     }
@@ -56,26 +46,31 @@ class Typer extends Thread {
     public void run() {
         String[] wordsToType = typeRacer.getWordsToType().split(" ");
 
-        // TODO (1): Hitung waktu per kata dalam milidetik
-        long howLongToType = (long) ((60.0 / wpm) * 1000); // ms per kata
+        int totalWords = wordsToType.length;
+        int wordsTypedCount = 0;
 
-        startTime = System.currentTimeMillis();
+        double secondsPerWord = 60.0 / wpm;
 
-        // TODO (2): Ketik setiap kata dengan jeda howLongToType
-        for (String word : wordsToType) {
+        long startTime = System.currentTimeMillis();
+
+        while (wordsTypedCount < totalWords) {
             try {
-                Thread.sleep(howLongToType);
+                Thread.sleep((long)(secondsPerWord * 1000));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            this.addWordsTyped(word);
+
+            addWordsTyped(wordsToType[wordsTypedCount]);
+            wordsTypedCount++;
         }
 
-        this.addWordsTyped("(Selesai)");
-        endTime = System.currentTimeMillis();
+        addWordsTyped("(Selesai)");
+
+        long endTime = System.currentTimeMillis();
+        finishTime = (int)((endTime - startTime) / 1000); 
+
         finished = true;
 
-        // TODO (3): Tambahkan hasil ke klasemen
-        typeRacer.addResult(this);
+        typeRacer.addResult(botName, finishTime);
     }
 }

@@ -1,8 +1,6 @@
 package TypeRacer;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Random;
 
 public class TypeRacer {
@@ -18,13 +16,12 @@ public class TypeRacer {
         return rareContestant;
     }
 
-    // Bisa diganti sesuai keinginan masing-masing
     private String[] wordsToTypeList = {
-        "Di Bikini Bottom ada Spongebob Squarepants, dia memang keren suka main drumband",
-        "Dia jadi koki masaknya krabby patty, menjalani hari hidup bersama Garry",
-        "Ayo sama-sama sebutkan nama-nama makhluk dalam sana di Bikini Bottom jaya",
-        "Namun ada juga namanya Patrick Star, walau dia cetar tapi hidupnya liar",
-        "Tinggal dalam batu tapi suka membantu, sayang hanya satu otaknya itu buntu"
+            "Di Bikini Bottom ada Spongebob Squarepants, dia memang keren suka main drumband",
+            "Dia jadi koki masaknya krabby patty, menjalani hari hidup bersama Garry",
+            "Ayo sama-sama sebutkan nama-nama makhluk dalam sana di Bikini Bottom jaya",
+            "Namun ada juga namanya Patrick Star, walau dia cetar tapi hidupnya liar",
+            "Tinggal dalam batu tapi suka membantu, sayang hanya satu otaknya itu buntu"
     };
 
     public void setNewWordsToType() {
@@ -33,52 +30,56 @@ public class TypeRacer {
         wordsToType = wordsToTypeList[angkaRandom];
     }
 
-    // TODO (4) - Menambahkan hasil ke klasemen
-    public synchronized void addResult(Typer typer) {
-        long durationInSeconds = (typer.getEndTime() - typer.getStartTime()) / 1000;
-        rareStanding.add(new Result(typer.getBotName(), durationInSeconds));
+ 
+    public synchronized void addResult(String name, int finishTime) {
+        rareStanding.add(new Result(name, finishTime));
     }
 
-    // TODO (5) - Menampilkan klasemen akhir
+
     private void printRaceStanding() {
         System.out.println("\nKlasemen Akhir Type Racer");
         System.out.println("=========================\n");
 
-        Collections.sort(rareStanding, Comparator.comparingLong(Result::getDuration));
+        rareStanding.sort((r1, r2) -> Integer.compare(r1.getFinishTime(), r2.getFinishTime()));
 
-        int position = 1;
-        for (Result result : rareStanding) {
-            System.out.println(position + ". " + result.getName() + " = " + result.getDuration() + " detik");
-            position++;
+        int posisi = 1;
+        for (Result r : rareStanding) {
+            System.out.println(posisi + ". " + r.getName() + " = " + r.getFinishTime() + " detik");
+            posisi++;
         }
     }
 
-    // TODO (6) - Menjalankan perlombaan
+ 
     public void startRace() {
         for (Typer typer : rareContestant) {
-            typer.setWordsToType(wordsToType);
-            typer.start(); // gunakan start() karena Typer adalah Thread
+            typer.start();
         }
     }
 
-    // TODO (7) dan (8) - Menampilkan progres dan klasemen akhir
     public void displayRaceStandingPeriodically() throws InterruptedException {
         boolean allFinished = false;
 
         while (!allFinished) {
-            System.out.println("\nTyping Progress ...");
+            System.out.println("Typing Progress...");
             System.out.println("===================");
 
+            allFinished = true; 
+
             for (Typer typer : rareContestant) {
-                System.out.println(typer.getBotName() + " => " + typer.getWordsTyped());
+                String wordsTyped = typer.getWordsTyped();
+                System.out.println("-" + typer.getBotName() + " => " + wordsTyped.trim());
+
+                if (!typer.isFinished()) {
+                    allFinished = false; 
+                }
             }
+            System.out.println();
 
-            Thread.sleep(2000); // tunggu 2 detik
-
-            allFinished = rareContestant.stream().allMatch(Typer::isFinished);
+            if (!allFinished) {
+                Thread.sleep(2000);
+            }
         }
 
-        // Setelah semua selesai, tampilkan klasemen akhir
         printRaceStanding();
     }
 }
